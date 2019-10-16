@@ -27,7 +27,8 @@ int fetchMulticastAddress(IPAddress &mcastAddr)
 
 void setup()
 {
-    waitUntil(WiFi.ready);
+    //WiFi.clearCredentials();
+    waitUntil(WiFi.ready);    
 
     Serial.begin();
 

@@ -3,13 +3,13 @@
 /******************************************************/
 
 #include "application.h"
-#line 1 "/home/grimus/code/Particle/broadcast-mesh-sender/src/broadcast-mesh-sender.ino"
+#line 1 "/home/grimus/code/Particle/mesh-midi-gateway/src/mesh-midi-gateway.ino"
 /* Mesh Sender */
 int fetchMulticastAddress(IPAddress &mcastAddr);
 void setup();
 void loop();
 void sendPacket(const char *msg);
-#line 2 "/home/grimus/code/Particle/broadcast-mesh-sender/src/broadcast-mesh-sender.ino"
+#line 2 "/home/grimus/code/Particle/mesh-midi-gateway/src/mesh-midi-gateway.ino"
 #define MAX_WIFI_PACKET_LEN (1232)
 #define MAX_MESH_PACKET_LEN (128)
 #define NUM_SLIDERS 5
@@ -38,7 +38,8 @@ int fetchMulticastAddress(IPAddress &mcastAddr)
 
 void setup()
 {
-    waitUntil(WiFi.ready);
+    //WiFi.clearCredentials();
+    waitUntil(WiFi.ready);    
 
     Serial.begin();
 
