@@ -28,7 +28,7 @@ int fetchMulticastAddress(IPAddress &mcastAddr)
 void setup()
 {
     //WiFi.clearCredentials();
-    waitUntil(WiFi.ready);    
+    waitUntil(WiFi.ready);
 
     Serial.begin();
 
@@ -64,29 +64,49 @@ void loop()
         {
             for (int i = 0; i < NUM_SLIDERS; i++)
             {
-                String num = String(i+1);
+                String num = String(i + 1);
                 String oscAddress;
                 oscAddress = "/1/fader" + num;
                 if (msg_received.fullMatch(oscAddress, 0))
                 {
                     memset(msg, 0, strlen(msg)); //clear buffer
-                    snprintf(msg, sizeof(msg), "f %i %f", i+1, msg_received.getFloat(0));
+                    snprintf(msg, sizeof(msg), "f %i %f", i + 1, msg_received.getFloat(0));
                     sendPacket(msg);
                 }
             }
             for (int i = 0; i < NUM_TOGGLES; i++)
             {
-                String num = String(i+1);
+                String num = String(i + 1);
                 String oscAddress;
                 oscAddress = "/1/toggle" + num;
                 if (msg_received.fullMatch(oscAddress, 0))
                 {
                     memset(msg, 0, strlen(msg)); //clear buffer
-                    snprintf(msg, sizeof(msg), "i %i %i", i+1, (int) msg_received.getFloat(0));
+                    snprintf(msg, sizeof(msg), "i %i %i", i + 1, (int)msg_received.getFloat(0));
                     sendPacket(msg);
                 }
+            }
+            String oscAddress;
+            oscAddress = "/noteOn";
+            if (msg_received.fullMatch(oscAddress, 0))
+            {
+                // Serial.printf("channel: %i", msg_received.getInt(0));
+                // Serial.printf(" note: %i", msg_received.getInt(1));
+                // Serial.printlnf(" velocity: %i", msg_received.getInt(2));
+                memset(msg, 0, strlen(msg)); //clear buffer
+                snprintf(msg, sizeof(msg), "n %i %i %i",(int)msg_received.getInt(0),(int)msg_received.getInt(1),(int)msg_received.getInt(2));
+                sendPacket(msg);
+            }
+            oscAddress = "/noteOff";
+            if (msg_received.fullMatch(oscAddress, 0))
+            {
+                // Serial.printf("channel: %i", msg_received.getInt(0));
+                // Serial.printf(" note: %i", msg_received.getInt(1));
+                // Serial.printlnf(" velocity: %i", msg_received.getInt(2));
+                memset(msg, 0, strlen(msg)); //clear buffer
+                snprintf(msg, sizeof(msg), "o %i %i %i",(int)msg_received.getInt(0),(int)msg_received.getInt(1),(int)msg_received.getInt(2));
+                sendPacket(msg);
             }            
-
         }
     }
 }
