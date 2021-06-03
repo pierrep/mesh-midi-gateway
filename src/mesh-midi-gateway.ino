@@ -1,8 +1,8 @@
 /* Mesh Sender */
 #define MAX_WIFI_PACKET_LEN (1232)
-#define MAX_MESH_PACKET_LEN (128)
+#define MAX_MESH_PACKET_LEN (64)
 #define NUM_SLIDERS 5
-#define NUM_TOGGLES 4
+#define NUM_MODES 10
 
 #include "OSCBundle.h"
 #include "OSCMessage.h"
@@ -27,6 +27,7 @@ int fetchMulticastAddress(IPAddress &mcastAddr)
 
 void setup()
 {
+    Serial.printlnf("Waiting for WIFI to be read");
     //WiFi.clearCredentials();
     waitUntil(WiFi.ready);
 
@@ -34,7 +35,7 @@ void setup()
 
     Serial.printlnf("Starting... This device ID = %s", System.deviceID().c_str());
     IPAddress myIP = WiFi.localIP();
-    Serial.println(myIP); // prints the device's local IP address
+    Serial.printlnf("My WIFI localIP = %s",myIP.toString().c_str()); // prints the device's local IP address
 
     udpWifi.begin(wifiPort);
     udpWifi.setBuffer(MAX_WIFI_PACKET_LEN);
@@ -72,19 +73,21 @@ void loop()
                     memset(msg, 0, strlen(msg)); //clear buffer
                     snprintf(msg, sizeof(msg), "f %i %f", i + 1, msg_received.getFloat(0));
                     sendPacket(msg);
+                    //Serial.printf("fader %i value: %f\n",i + 1, msg_received.getFloat(0));
                 }
             }
-            for (int i = 0; i < NUM_TOGGLES; i++)
+            for (int i = 0; i < NUM_MODES; i++)
             {
-                String num = String(i + 1);
+                String num = String(i);
                 String oscAddress;
-                oscAddress = "/1/toggle" + num;
+                oscAddress = "/mode" + num;
                 if (msg_received.fullMatch(oscAddress, 0))
                 {
                     memset(msg, 0, strlen(msg)); //clear buffer
-                    snprintf(msg, sizeof(msg), "i %i %i", i + 1, (int)msg_received.getFloat(0));
+                    snprintf(msg, sizeof(msg), "m %i %i", i, (int)msg_received.getFloat(0));
                     sendPacket(msg);
-                }
+                    Serial.printf("toggle %i value: %i\n",i, (int)msg_received.getFloat(0));
+                }               
             }
             String oscAddress;
             oscAddress = "/noteOn";
@@ -106,7 +109,43 @@ void loop()
                 memset(msg, 0, strlen(msg)); //clear buffer
                 snprintf(msg, sizeof(msg), "o %i %i %i",(int)msg_received.getInt(0),(int)msg_received.getInt(1),(int)msg_received.getInt(2));
                 sendPacket(msg);
-            }            
+            } 
+            oscAddress = "/meshConfig";
+            if (msg_received.fullMatch(oscAddress, 0))
+            {
+                uint8_t id          = msg_received.getInt(0);
+                uint8_t left        = msg_received.getInt(1);
+                uint8_t top         = msg_received.getInt(2);
+                uint8_t right       = msg_received.getInt(3);
+                uint8_t bottom      = msg_received.getInt(4);
+                uint8_t topleft     = msg_received.getInt(5);
+                uint8_t topright    = msg_received.getInt(6);
+                uint8_t bottomleft  = msg_received.getInt(7);
+                uint8_t bottomright = msg_received.getInt(8);
+                uint16_t totalDevices = msg_received.getInt(9);
+                uint8_t gridWidth   = msg_received.getInt(10);
+                uint8_t gridHeight  = msg_received.getInt(11);
+                //  Serial.printf("/meshConfig \t\t device: %i", id);
+                //  Serial.printf(" left: %i", left);
+                //  Serial.printf(" top: %i", top);
+                //  Serial.printf(" right: %i", right);
+                //  Serial.printf(" bottom: %i", bottom);
+                //  Serial.printf(" topleft: %i", topleft);
+                //  Serial.printf(" topright: %i", topright);
+                //  Serial.printf(" bottomleft: %i", bottomleft);
+                //  Serial.printlnf(" bottomright: %i", bottomright);                 
+                //  Serial.printlnf(" totalDevices: %i", totalDevices);  
+                //  Serial.printlnf(" gridWidth: %i", gridWidth);  
+                //  Serial.printlnf(" gridHeight: %i", gridHeight);  
+                memset(msg, 0, strlen(msg)); //clear buffer
+                snprintf(msg, sizeof(msg), "x %i %i %i %i %i %i %i",id,left,top,right,bottom,topleft,topright);
+                //Serial.printlnf("meshConfig msg  = %s Size of packet = %i",msg,sizeof(msg));
+                sendPacket(msg);
+                memset(msg, 0, strlen(msg)); //clear buffer
+                snprintf(msg, sizeof(msg), "y %i %i %i %i %i %i",id,bottomleft,bottomright,totalDevices, gridWidth, gridHeight);
+                //Serial.printlnf("meshConfig msg  = %s Size of packet = %i",msg,sizeof(msg));
+                sendPacket(msg);
+            }                        
         }
     }
 }
