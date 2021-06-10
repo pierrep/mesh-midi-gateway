@@ -87,28 +87,26 @@ void loop()
                     //Serial.printf("parameter %i value: %f\n",i, msg_received.getFloat(0));
                 }
             }
-            for (int i = 0; i < NUM_MODES; i++)
-            {
-                String num = String(i);
-                String oscAddress;
-                oscAddress = "/mode" + num;
-                if (msg_received.fullMatch(oscAddress, 0))
-                {
-                    memset(msg, 0, strlen(msg)); //clear buffer
-                    snprintf(msg, sizeof(msg), "m %i %i", i, (int)msg_received.getFloat(0));
-                    sendPacket(msg);
-                    //Serial.printf("toggle %i value: %i\n",i, (int)msg_received.getFloat(0));
-                }               
-            }
             String oscAddress;
+            oscAddress = "/mode";
+            if (msg_received.fullMatch(oscAddress, 0))
+            {
+                memset(msg, 0, strlen(msg)); //clear buffer
+                uint8_t mode = msg_received.getInt(0);
+                uint8_t value = msg_received.getInt(1);
+                snprintf(msg, sizeof(msg), "m %i %i", mode, value);
+                sendPacket(msg);
+                //Serial.printf("mode change %i value: %i\n",mode, value);
+            }               
             oscAddress = "/noteOn";
             if (msg_received.fullMatch(oscAddress, 0))
             {
-                int bank = msg_received.getInt(0);
-                int program = msg_received.getInt(1);
-                int channel = msg_received.getInt(2);
-                int note = msg_received.getInt(3);
-                int velocity = msg_received.getInt(4);
+                uint8_t bank = msg_received.getInt(0);
+                uint8_t program = msg_received.getInt(1);
+                uint8_t channel = msg_received.getInt(2);
+                uint8_t note = msg_received.getInt(3);
+                uint8_t velocity = msg_received.getInt(4);
+                uint8_t duration = msg_received.getInt(5);
                 // Serial.printf("bank: %i", bank);
                 // Serial.printf(" program: %i", program);
                 // Serial.printf(" channel: %i", channel);
@@ -117,7 +115,7 @@ void loop()
 
                 memset(msg, 0, strlen(msg)); //clear buffer
                 
-                snprintf(msg, sizeof(msg), "n %i %i %i %i %i",bank, program, channel, note, velocity);
+                snprintf(msg, sizeof(msg), "n %i %i %i %i %i %i",bank, program, channel, note, velocity, duration);
                 sendPacket(msg);
             }
             oscAddress = "/noteOff";
