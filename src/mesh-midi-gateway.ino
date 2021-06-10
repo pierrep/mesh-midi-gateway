@@ -1,7 +1,7 @@
 /* Mesh Sender */
 #define MAX_WIFI_PACKET_LEN (1232)
 #define MAX_MESH_PACKET_LEN (64)
-#define NUM_SLIDERS 5
+#define NUM_SLIDERS 10
 #define NUM_MODES 10
 
 #include "OSCBundle.h"
@@ -65,15 +65,15 @@ void loop()
         {
             for (int i = 0; i < NUM_SLIDERS; i++)
             {
-                String num = String(i + 1);
+                String num = String(i);
                 String oscAddress;
-                oscAddress = "/1/fader" + num;
+                oscAddress = "/param" + num;
                 if (msg_received.fullMatch(oscAddress, 0))
                 {
                     memset(msg, 0, strlen(msg)); //clear buffer
-                    snprintf(msg, sizeof(msg), "f %i %f", i + 1, msg_received.getFloat(0));
+                    snprintf(msg, sizeof(msg), "f %i %f", i, msg_received.getFloat(0));
                     sendPacket(msg);
-                    //Serial.printf("fader %i value: %f\n",i + 1, msg_received.getFloat(0));
+                    //Serial.printf("parameter %i value: %f\n",i, msg_received.getFloat(0));
                 }
             }
             for (int i = 0; i < NUM_MODES; i++)
@@ -86,18 +86,27 @@ void loop()
                     memset(msg, 0, strlen(msg)); //clear buffer
                     snprintf(msg, sizeof(msg), "m %i %i", i, (int)msg_received.getFloat(0));
                     sendPacket(msg);
-                    Serial.printf("toggle %i value: %i\n",i, (int)msg_received.getFloat(0));
+                    //Serial.printf("toggle %i value: %i\n",i, (int)msg_received.getFloat(0));
                 }               
             }
             String oscAddress;
             oscAddress = "/noteOn";
             if (msg_received.fullMatch(oscAddress, 0))
             {
-                // Serial.printf("channel: %i", msg_received.getInt(0));
-                // Serial.printf(" note: %i", msg_received.getInt(1));
-                // Serial.printlnf(" velocity: %i", msg_received.getInt(2));
+                int bank = msg_received.getInt(0);
+                int program = msg_received.getInt(1);
+                int channel = msg_received.getInt(2);
+                int note = msg_received.getInt(3);
+                int velocity = msg_received.getInt(4);
+                // Serial.printf("bank: %i", bank);
+                // Serial.printf(" program: %i", program);
+                // Serial.printf(" channel: %i", channel);
+                // Serial.printf(" note: %i", note);
+                // Serial.printlnf(" velocity: %i", velocity);
+
                 memset(msg, 0, strlen(msg)); //clear buffer
-                snprintf(msg, sizeof(msg), "n %i %i %i",(int)msg_received.getInt(0),(int)msg_received.getInt(1),(int)msg_received.getInt(2));
+                
+                snprintf(msg, sizeof(msg), "n %i %i %i %i %i",bank, program, channel, note, velocity);
                 sendPacket(msg);
             }
             oscAddress = "/noteOff";
